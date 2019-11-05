@@ -12,6 +12,9 @@ public class Repository<T> {
     }
 
     public boolean add(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Argument cannot be null!");
+        }
         if (array.get() == null) {
             T[] addedArray = Arrays.copyOf(array.get(), 1);
             addedArray[0] = value;
@@ -31,7 +34,7 @@ public class Repository<T> {
     }
 
     public boolean contains(T value) {
-        if (array.get() == null) {
+        if (value == null || array.get() == null) {
             return false;
         }
         for (T each: array.get()) {
@@ -43,7 +46,7 @@ public class Repository<T> {
     }
 
     public boolean remove(T value) {
-        if (array.get() == null) {
+        if (value == null || array.get() == null) {
             return false;
         }
         for (int i = 0; i < array.get().length; i++) {
