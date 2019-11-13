@@ -1,35 +1,51 @@
 package edu.nyu.cs9053.homework7;
 
+import java.lang.reflect.Array;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.Arrays;     //to use Arrays.copyOf(), not use any Java collection type.
 
 public class Repository<T> {
 
+    private static final int DEFAULT_ARRAY_SIZE = 5;
+
     private final AtomicReference<T[]> array;
 
-    public Repository(T[] array) {
-        this.array = new AtomicReference<>(array);
+    private final ArrayCreator<T> arrayCreator;
+
+    private final int initialSize;
+
+    private int trueSize;
+
+    public Repository(ArrayCreator<T> arrayCreator) {
+        this(arrayCreator, DEFAULT_ARRAY_SIZE);
+    }
+
+    public Repository(ArrayCreator<T> arrayCreator, int initialSize) {
+        this.arrayCreator = arrayCreator;
+        this.array = new AtomicReference<>(resize(initialSize));
+        this.initialSize = initialSize;
+        trueSize = 0;
+    }
+
+    private T[] resize(int size) {
+        return arrayCreator.create(size);
     }
 
     public boolean add(T value) {
         if (value == null) {
             throw new IllegalArgumentException("Argument cannot be null!");
         }
-        if (array.get() == null) {
-            T[] addedArray = Arrays.copyOf(array.get(), 1);
-            addedArray[0] = value;
-            array.set(addedArray);
+        if (contains(value)) {
+            return false;
         }
-        else {
-            for (T each: array.get()) {
-                if (value == each) {
-                    return false;
-                }
+        if (this.trueSize == array.get().length) {
+            T[] doubleArray = resize(trueSize + initialSize);
+            for (int i = 0; i < array.get().length; i++) {
+                doubleArray[i] = array.get()[i];
             }
-            T[] addedArray = Arrays.copyOf(array.get(), array.get().length + 1);
-            addedArray[array.get().length] = value;
-            array.set(addedArray);
+            array.set(doubleArray);
         }
+        this.array.get()[trueSize] = value;
+        trueSize++;
         return true;
     }
 
@@ -51,11 +67,11 @@ public class Repository<T> {
         }
         for (int i = 0; i < array.get().length; i++) {
             if (value == array.get()[i]) {
-                T[] removedArray = Arrays.copyOf(array.get(), array.get().length - 1);
-                for (int j = i; j < removedArray.length; j++) {
-                    removedArray[j] = array.get()[j+1];
+                for (int j = i; j < (array.get().length - 1); j++) {
+                    array.get()[j] = array.get()[j+1];
                 }
-                array.set(removedArray);
+                array.get()[array.get().length] = null;
+                trueSize--;
                 return true;
             }
         }
@@ -76,7 +92,7 @@ public class Repository<T> {
         if (array.get() == null) {
             return 0;
         }
-        return array.get().length;
+        return trueSize;
     }
 
 }

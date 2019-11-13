@@ -1,6 +1,6 @@
 package edu.nyu.cs9053.homework7;
 
-public abstract class BarnyardAnimal implements Animal{
+public abstract class BarnyardAnimal implements Animal {
 
     private final String name;
 
